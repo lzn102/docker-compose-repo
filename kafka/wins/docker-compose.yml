@@ -1,0 +1,61 @@
+version: '3'
+
+volumes:
+    kafka-data:
+        driver: local
+
+services:
+
+    kafka1:
+        container_name: kafka1
+        image: "bitnami/kafka:latest"
+        restart: on-failure
+        user: root
+        ports:
+            - "9092:9092"
+            - "9093:9093"
+        volumes:
+            - kafka-data:/bitnami/kafka
+        extra_hosts:
+            - "mac.local:100.100.50.10"
+            - "wins.local:100.100.50.1"
+            - "ten.local:100.100.50.3"
+        environment:
+            - KAFKA_ENABLE_KRAFT=yes
+            - KAFKA_KRAFT_CLUSTER_ID=onlyone
+            - KAFKA_CFG_NODE_ID=50011 # 需要修改
+            - KAFKA_CFG_PROCESS_ROLES=controller,broker # 需要修改,↓ 同
+            - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=50101@mac.local:9093, 50011@wins.local:9093, 50031@ten.local:9093
+            - KAFKA_CFG_LISTENERS=PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
+            - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://wins.local:9092 # 需要修改
+            - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+            - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
+            - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=PLAINTEXT
+            - KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE=false
+
+    kafka2:
+        container_name: kafka2
+        image: "bitnami/kafka:latest"
+        restart: on-failure
+        user: root
+        ports:
+            - "10092:9092"
+            - "10093:9093"
+        volumes:
+            - kafka-data:/bitnami/kafka
+        extra_hosts:
+            - "mac.local:100.100.50.10"
+            - "wins.local:100.100.50.1"
+            - "ten.local:100.100.50.3"
+        environment:
+            - KAFKA_ENABLE_KRAFT=yes
+            - KAFKA_KRAFT_CLUSTER_ID=onlyone
+            - KAFKA_CFG_NODE_ID=50012 # 需要修改
+            - KAFKA_CFG_PROCESS_ROLES=broker # 需要修改,↓ 同
+            - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=50101@mac.local:9093, 50011@wins.local:9093, 50031@ten.local:9093
+            - KAFKA_CFG_LISTENERS=PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
+            - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://wins.local:19092 # 需要修改
+            - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+            - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
+            - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=PLAINTEXT
+            - KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE=false
